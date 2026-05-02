@@ -32,14 +32,11 @@ public final class PropEngineCommand {
     public void register() {
         propEngine.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event -> {
             Commands commands = event.registrar();
-            commands.register(Commands.literal("propengine").requires(source -> source.getSender().hasPermission("propengine.command.propengine"))
-                .then(Commands.literal("spawn")
-                .then(buildTypeBranch(PropType.STATIC))
-                .then(buildTypeBranch(PropType.DOOR))
-                .then(buildTypeBranch(PropType.ELEVATOR))
-                .then(buildTypeBranch(PropType.VEHICLE))
-                .then(buildTypeBranch(PropType.NPC))
-                .then(buildTypeBranch(PropType.MISC))).build());
+            var spawnBranch = Commands.literal("spawn");
+            for (PropType propType : propEngine.PROP_TYPE_REGISTRAR.getEntries().values()) {
+                spawnBranch.then(buildTypeBranch(propType));
+            }
+            commands.register(Commands.literal("propengine").requires(source -> source.getSender().hasPermission("propengine.command.propengine")).then(spawnBranch).build());
         });
     }
 
