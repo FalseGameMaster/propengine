@@ -19,6 +19,7 @@ import org.joml.Vector3f;
 
 import java.util.List;
 
+@Deprecated
 public class TestUtilityDoorProp extends Prop {
 
     public TestUtilityDoorProp(Prop.Registrar registrar, String uniqueFriendlyName) {

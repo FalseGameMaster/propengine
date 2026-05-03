@@ -1,5 +1,5 @@
 name: propengine
-version: '0.1.0'
+version: '0.1.1'
 main: dev.falsegamemaster.propengine.PropEnginePlugin
 api-version: '1.21'
 authors: [ FalseGameMaster ]
@@ -13,8 +13,3 @@ commands:
       /propengine spawn <prop_type> <namespace:prop_name> in <dimension> at <x> <y> <z> rotated <yaw> <pitch> <roll>
       example 1: /propengine spawn door propengine:example_door in world at 1 2 3 facing east
       example 2: /propengine spawn vehicle propengine:example_vehicle in world at 1 2 3 rotated 45 30 25
-#    aliases: [pe]
-  spawnfighter:
-    description: Spawn a basic flying vehicle
-  leavefighter:
-    description: Leave the basic flying vehicle

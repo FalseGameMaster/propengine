@@ -25,6 +25,7 @@ import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 public class PlayerCorpseProp extends Prop {
 
     public PlayerCorpseProp(Prop.Registrar registrar, String uniqueFriendlyName) {

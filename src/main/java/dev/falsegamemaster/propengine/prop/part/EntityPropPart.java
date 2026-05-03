@@ -1,6 +1,7 @@
 package dev.falsegamemaster.propengine.prop.part;
 
 import dev.falsegamemaster.propengine.prop.Prop;
+import dev.falsegamemaster.propengine.prop.PropPersistentData;
 import dev.falsegamemaster.propengine.prop.PropSpawnRequest;
 import dev.falsegamemaster.propengine.util.AdvancedLocation;
 import org.bukkit.Location;
@@ -18,6 +19,7 @@ public abstract class EntityPropPart<P extends Prop, E extends Entity> extends P
         internal.setInvulnerable(true);
         internal.setGravity(false);
         internal.setRotation(location.getYaw(), location.getPitch());
+        PropPersistentData.write(internal, prop, location, request.data());
         String domain0 = "propengine";
         String domain1 = domain0 + "." + prop.getPropType().literal();
         String domain2 = domain1 + "." + prop.getLiteral();

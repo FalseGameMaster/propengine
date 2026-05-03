@@ -8,6 +8,7 @@ import dev.falsegamemaster.propengine.registration.IPropPartFactory;
 
 import java.util.List;
 
+@Deprecated
 public class TestVehicleProp extends Prop {
 
     public TestVehicleProp(Prop.Registrar registrar, String uniqueFriendlyName) {

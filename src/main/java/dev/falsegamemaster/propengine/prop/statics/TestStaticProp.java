@@ -9,6 +9,7 @@ import dev.falsegamemaster.propengine.registration.IPropPartFactory;
 
 import java.util.List;
 
+@Deprecated
 public class TestStaticProp extends Prop {
 
     public TestStaticProp(Prop.Registrar registrar, String uniqueFriendlyName) {
