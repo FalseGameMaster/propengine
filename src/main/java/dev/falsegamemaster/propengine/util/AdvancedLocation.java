@@ -3,6 +3,7 @@ package dev.falsegamemaster.propengine.util;
 import org.bukkit.Location;
 import org.bukkit.UndefinedNullability;
 import org.bukkit.World;
+import org.jetbrains.annotations.NotNull;
 
 public class AdvancedLocation extends Location {
 
@@ -34,6 +35,18 @@ public class AdvancedLocation extends Location {
     public AdvancedLocation(@UndefinedNullability final World world, final double x, final double y, final double z, final float yaw, final float pitch, final float roll) { // Paper
         super(world, x, y, z, yaw, pitch);
         this.roll = roll;
+    }
+
+    public AdvancedLocation(Location location) { // Paper
+        this(location.getWorld(), location.x(), location.y(), location.z(), location.getYaw(), location.getPitch(), 0);
+    }
+
+    public AdvancedLocation(AdvancedLocation location) { // Paper
+        this(location.getWorld(), location.x(), location.y(), location.z(), location.getYaw(), location.getPitch(), location.getRoll());
+    }
+
+    public AdvancedLocation copy() {
+        return new AdvancedLocation(this);
     }
 
     // TODO: document this (4/12/2026)
@@ -68,6 +81,11 @@ public class AdvancedLocation extends Location {
 //     */
     public float getRoll() {
         return roll;
+    }
+
+    @Override
+    public @NotNull AdvancedLocation clone() {
+        return (AdvancedLocation) super.clone();
     }
 
 }

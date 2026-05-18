@@ -1,9 +1,8 @@
 package dev.falsegamemaster.propengine.registration;
 
 import dev.falsegamemaster.propengine.prop.Prop;
-import dev.falsegamemaster.propengine.prop.part.EntityPropPart;
-import org.bukkit.entity.Entity;
+import dev.falsegamemaster.propengine.prop.part.PropPart;
 
-public interface IPropPartFactory<P extends EntityPropPart<? extends Prop, ? extends Entity>> {
+public interface IPropPartFactory<P extends PropPart<? extends Prop, ?>> {
     P createPropPart(Prop prop, int sequentialID);
 }

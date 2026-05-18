@@ -121,24 +121,24 @@ public class TestDoorProp extends Prop {
 
         @Override
         public void createFrames(List<IPropAnimationFrame<TestDoorProp>> frames) {
-            for (int i = 0; i < 2; i ++) {
-                frames.add(createFrame(i));
-            }
+//            for (int i = 0; i < 2; i ++) {
+//                frames.add(createFrame(i));
+//            }
         }
 
-        private IPropAnimationFrame<TestDoorProp> createFrame(int frameIndex) {
-            return IPropAnimationFrame.create(prop -> {
-                PropPart<TestDoorProp, ItemDisplay> doorPart = prop.getPart(1);
-                if (doorPart == null) return;
-                AdvancedLocation location = prop.getLocation();
-                float yOffset = frameIndex == 0 ? 0 : 3;
-                Transform propTransform = new Transform.Builder(location).pivot(new Vector3f(-0.5f, 1.0f, -0.5f)).build();
-                Transform doorPartTransform = new Transform.Builder().translation(new Vector3f(-0.5f, 0.5f + yOffset, -0.5f)).scale(new Vector3f(3, 3, 1)).build();
-                doorPart.getInternal().setInterpolationDelay(0);
-                doorPart.getInternal().setInterpolationDuration(20);
-                doorPart.getInternal().setTransformation(propTransform.compose(doorPartTransform).bake());
-            }, 40);
-        }
+//        private IPropAnimationFrame<TestDoorProp> createFrame(int frameIndex) {
+//            return IPropAnimationFrame.create(prop -> {
+//                PropPart<TestDoorProp, ItemDisplay> doorPart = prop.getPartOLD(1);
+//                if (doorPart == null) return;
+//                AdvancedLocation location = prop.getLocation();
+//                float yOffset = frameIndex == 0 ? 0 : 3;
+//                Transform propTransform = new Transform.Builder(location).pivot(new Vector3f(-0.5f, 1.0f, -0.5f)).build();
+//                Transform doorPartTransform = new Transform.Builder().translation(new Vector3f(-0.5f, 0.5f + yOffset, -0.5f)).scale(new Vector3f(3, 3, 1)).build();
+//                doorPart.getInternal().setInterpolationDelay(0);
+//                doorPart.getInternal().setInterpolationDuration(20);
+//                doorPart.getInternal().setTransformation(propTransform.compose(doorPartTransform).bake());
+//            }, 40);
+//        }
     }
 
 }

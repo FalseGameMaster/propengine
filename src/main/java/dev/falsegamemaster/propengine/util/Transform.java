@@ -54,13 +54,13 @@ public class Transform {
      */
     public Vector3f transformPoint(Vector3f point) {
         Vector3f result = new Vector3f(point);
+        result.add(translation);
         result.sub(pivot); // Move point into pivot-relative space
         result.rotate(preScaleRotation); // Apply pre-scale rotation
         result.mul(scale); // Apply scale
         result.rotate(postScaleRotation); // Apply post-scale rotation
         // Move back out of pivot-relative space, then apply translation
         result.add(pivot);
-        result.add(translation);
         return result;
     }
 
@@ -77,11 +77,11 @@ public class Transform {
      * first apply child, then apply parent.
      */
     public static Transform compose(Transform parent, Transform child) {
-        Vector3f composedTranslation = parent.transformPoint(child.getTranslation());
+        Vector3f composedTranslation = parent.transformPoint(child.transformPoint(new Vector3f()));
         Quaternionf composedPreScaleRotation = new Quaternionf(parent.getPreScaleRotation()).mul(child.getPreScaleRotation());
         Quaternionf composedPostScaleRotation = new Quaternionf(parent.getPostScaleRotation()).mul(child.getPostScaleRotation());
         Vector3f composedScale = new Vector3f(parent.getScale()).mul(child.getScale());
-        return new Transform(composedTranslation, child.getPivot(), composedPreScaleRotation, composedScale, composedPostScaleRotation);
+        return new Transform(composedTranslation, new Vector3f(), composedPreScaleRotation, composedScale, composedPostScaleRotation);
     }
 
     /**
@@ -153,4 +153,8 @@ public class Transform {
         }
     }
 
+    @Override
+    public String toString() {
+        return "Transform{" + "translation=" + translation + ", pivot=" + pivot + ", scale=" + scale + ", preScaleRotation=" + preScaleRotation + ", postScaleRotation=" + postScaleRotation + '}';
+    }
 }

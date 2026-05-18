@@ -1,5 +1,6 @@
 package dev.falsegamemaster.propengine.commands;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.context.CommandContext;
@@ -20,6 +21,8 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 
 @SuppressWarnings("UnstableApiUsage")
 public final class PropSpawnArgumentParser {
@@ -30,7 +33,7 @@ public final class PropSpawnArgumentParser {
         CommandSender sender = context.getSource().getSender();
         Player player = sender instanceof Player p ? p : null;
         String literal = StringArgumentType.getString(context, "literal");
-        IPropFactory<?> propFactory = propEngine.PROP_REGISTRAR.getEntries().get(literal);
+        IPropFactory<?> propFactory = propEngine.propRegistrar.getEntries().get(literal);
         if (propFactory == null) { sender.sendPlainMessage("Unknown prop: " + literal); return null; }
         if (!Objects.equals(Prop.dummy(propFactory).getPropType(), propType)) { sender.sendPlainMessage("Prop " + literal + " is not of type " + propType + "."); return null; }
         World world;
@@ -65,12 +68,23 @@ public final class PropSpawnArgumentParser {
             Float parsedPitch = parseRelativeFloat(StringArgumentType.getString(context, "pitch"), baseLocation != null, baseLocation != null ? baseLocation.getPitch() : 0.0f);
             Float parsedRoll = parseRelativeFloat(StringArgumentType.getString(context, "roll"), false, 0.0f);
             if (parsedYaw == null || parsedPitch == null || parsedRoll == null) { sender.sendPlainMessage("Invalid yaw, pitch, or roll."); return null; }
-            yaw = parsedYaw; pitch = parsedPitch; roll = parsedRoll;
+            yaw = parsedYaw + 180; pitch = parsedPitch; roll = parsedRoll;
         }
         JsonObject data = null;
         try { data = PropDataParser.parseObject(StringArgumentType.getString(context, "data"));
-        } catch (IllegalArgumentException ignored) {}
-        return new PropSpawnRequest(literal, StringArgumentType.getString(context, "name"), new AdvancedLocation(world, (int) x, (int) y, (int) z, yaw, pitch, roll), data);
+        } catch (IllegalArgumentException e) {
+            PropEnginePlugin.LOGGER.warning("Custom JSON data could not be parsed for prop: " + e.getMessage());
+        }
+        String uniqueName = Optional.ofNullable(parseUniqueFriendlyName(data)).orElse(UUID.randomUUID().toString());
+        return new PropSpawnRequest(literal, uniqueName, new AdvancedLocation(world, x, y, z, yaw, pitch, roll), data);
+    }
+
+    @Nullable
+    private static String parseUniqueFriendlyName(@Nullable JsonObject data) {
+        if (data == null || !data.has("name")) return null;
+        JsonElement element = data.get("name");
+        if (!element.isJsonPrimitive()) return null;
+        return element.getAsString();
     }
 
     private static @Nullable Float parseRelativeFloat(String input, boolean allowRelative, float base) {

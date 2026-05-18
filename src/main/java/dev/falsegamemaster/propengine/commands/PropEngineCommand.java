@@ -2,7 +2,9 @@ package dev.falsegamemaster.propengine.commands;
 
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.ArgumentBuilder;
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import dev.falsegamemaster.propengine.PropEnginePlugin;
@@ -32,68 +34,215 @@ public final class PropEngineCommand {
     public void register() {
         propEngine.getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS, event -> {
             Commands commands = event.registrar();
-            var spawnBranch = Commands.literal("spawn");
-            for (PropType propType : propEngine.PROP_TYPE_REGISTRAR.getEntries().values()) {
-                spawnBranch.then(buildTypeBranch(propType));
-            }
-            commands.register(Commands.literal("propengine").requires(source -> source.getSender().hasPermission("propengine.command.propengine")).then(spawnBranch).build());
+            commands.register(Commands.literal("propengine").requires(source -> source.getSender().hasPermission("propengine.command.propengine"))
+                .then(SpawnBranch.create())
+                .then(GraphShowHideBranch.create())
+                .then(RouteShowHideBranch.create())
+                .build());
         });
     }
 
-    private ArgumentBuilder<CommandSourceStack, ?> buildTypeBranch(PropType propType) {
-        var nameBranch = Commands.argument("name", StringArgumentType.word())
-            .then(buildAtBranch(propType, false))
-            .then(Commands.literal("in").then(Commands.argument("dimension", StringArgumentType.word()).suggests(this::suggestWorlds)
-            .then(buildAtBranch(propType, true))));
-        return Commands.literal(propType.literal())
-            .then(Commands.argument("literal", StringArgumentType.word()).suggests((context, builder) -> suggestPropsOfType(propType, builder))
-            .then(nameBranch));
-    }
+    public static class SpawnBranch {
+        protected static LiteralArgumentBuilder<CommandSourceStack> create() {
+            var spawnBranch = Commands.literal("spawn");
+            for (PropType propType : PropEnginePlugin.getInstance().propTypeRegistrar.getEntries().values()) {
+                spawnBranch.then(buildTypeBranch(propType));
+            }
+            return spawnBranch;
+        }
 
-    private ArgumentBuilder<CommandSourceStack, ?> buildAtBranch(PropType propType, boolean explicitDimension) {
-        var positionBranch = Commands.argument("position", ArgumentTypes.finePosition());
-        var facingBranch = Commands.literal("facing")
-                .then(Commands.argument("facing", StringArgumentType.word()).suggests(this::suggestCardinals)
+        private static ArgumentBuilder<CommandSourceStack, ?> buildTypeBranch(PropType propType) {
+            return Commands.literal(propType.literal())
+                .then(Commands.argument("literal", StringArgumentType.word()).suggests((context, builder) -> suggestPropsOfType(propType, builder))
+                .then(Commands.literal("in").then(Commands.argument("dimension", StringArgumentType.word()).suggests(SpawnBranch::suggestWorlds)
+                .then(buildAtBranch(propType, true)))));
+        }
+
+        private static ArgumentBuilder<CommandSourceStack, ?> buildAtBranch(PropType propType, boolean explicitDimension) {
+            var positionBranch = Commands.argument("position", ArgumentTypes.finePosition());
+            var facingBranch = Commands.literal("facing")
+                .then(Commands.argument("facing", StringArgumentType.word()).suggests(SpawnBranch::suggestCardinals)
                 .executes(context -> executeSpawn(context, propType, PropRotationMode.FACING, explicitDimension))
                 .then(Commands.argument("data", StringArgumentType.greedyString())
                 .executes(context -> executeSpawn(context, propType, PropRotationMode.FACING, explicitDimension))));
-        positionBranch.then(facingBranch);
-        if (propType.rotationPolicy() == PropRotationPolicy.EULER) {
-            var rotatedBranch = Commands.literal("rotated")
-                .then(Commands.argument("yaw", StringArgumentType.word())
-                .then(Commands.argument("pitch", StringArgumentType.word())
-                .then(Commands.argument("roll", StringArgumentType.word())
-                .executes(context -> executeSpawn(context, propType, PropRotationMode.ROTATED, explicitDimension))
-                .then(Commands.argument("data", StringArgumentType.greedyString())
-                .executes(context -> executeSpawn(context, propType, PropRotationMode.ROTATED, explicitDimension))))));
-            positionBranch.then(rotatedBranch);
+            positionBranch.then(facingBranch);
+            if (propType.rotationPolicy() == PropRotationPolicy.EULER) {
+                var rotatedBranch = Commands.literal("rotated")
+                    .then(Commands.argument("yaw", StringArgumentType.word())
+                    .then(Commands.argument("pitch", StringArgumentType.word())
+                    .then(Commands.argument("roll", StringArgumentType.word())
+                    .executes(context -> executeSpawn(context, propType, PropRotationMode.ROTATED, explicitDimension))
+                    .then(Commands.argument("data", StringArgumentType.greedyString())
+                    .executes(context -> executeSpawn(context, propType, PropRotationMode.ROTATED, explicitDimension))))));
+                positionBranch.then(rotatedBranch);
+            }
+            return Commands.literal("at").then(positionBranch);
         }
-        return Commands.literal("at").then(positionBranch);
-    }
 
-    private int executeSpawn(CommandContext<CommandSourceStack> context, PropType propType, PropRotationMode rotationMode, boolean explicitDimension) {
-        PropSpawnRequest request = PropSpawnArgumentParser.parse(propEngine, context, propType, rotationMode, explicitDimension);
-        if (request == null) return 0;
-        Prop.spawn(propEngine, request);
-        context.getSource().getSender().sendPlainMessage("Spawned " + request.literal());
-        return 1;
-    }
-
-    private CompletableFuture<Suggestions> suggestPropsOfType(PropType propType, SuggestionsBuilder builder) {
-        for (Map.Entry<String, IPropFactory<? extends Prop>> entry : propEngine.PROP_REGISTRAR.getEntries().entrySet()) {
-            String literal = entry.getKey();
-            IPropFactory<? extends Prop> factory = entry.getValue();
-            if (Objects.equals(Prop.dummy(factory).getPropType(), propType)) builder.suggest(literal);
+        private static int executeSpawn(CommandContext<CommandSourceStack> context, PropType propType, PropRotationMode rotationMode, boolean explicitDimension) {
+            PropEnginePlugin plugin = PropEnginePlugin.getInstance();
+            PropSpawnRequest request = PropSpawnArgumentParser.parse(plugin, context, propType, rotationMode, explicitDimension);
+            if (request == null) return 0;
+            Prop.spawn(plugin, request);
+            context.getSource().getSender().sendPlainMessage("Spawned " + request.literal());
+            return 1;
         }
-        return builder.buildFuture();
+
+        private static CompletableFuture<Suggestions> suggestPropsOfType(PropType propType, SuggestionsBuilder builder) {
+            for (Map.Entry<String, IPropFactory<? extends Prop>> entry : PropEnginePlugin.getInstance().propRegistrar.getEntries().entrySet()) {
+                String literal = entry.getKey();
+                IPropFactory<? extends Prop> factory = entry.getValue();
+                if (Objects.equals(Prop.dummy(factory).getPropType(), propType)) builder.suggest(literal);
+            }
+            return builder.buildFuture();
+        }
+
+        private static CompletableFuture<Suggestions> suggestWorlds(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder) {
+            for (World world : PropEnginePlugin.getInstance().getServer().getWorlds()) builder.suggest(world.getName());
+            return builder.buildFuture();
+        }
+
+        private static CompletableFuture<Suggestions> suggestCardinals(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder) {
+            return builder.suggest("north").suggest("east").suggest("south").suggest("west").suggest("n").suggest("e").suggest("s").suggest("w").buildFuture();
+        }
     }
 
-    private CompletableFuture<Suggestions> suggestWorlds(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder) {
-        for (World world : propEngine.getServer().getWorlds()) builder.suggest(world.getName());
-        return builder.buildFuture();
+    public static class GraphCreateRemoveBranch {
+
     }
 
-    private CompletableFuture<Suggestions> suggestCardinals(CommandContext<CommandSourceStack> context, SuggestionsBuilder builder) {
-        return builder.suggest("north").suggest("east").suggest("south").suggest("west").suggest("n").suggest("e").suggest("s").suggest("w").buildFuture();
+    public static class GraphListBranch {
+
     }
+
+    public static class GraphShowHideBranch {
+        protected static LiteralArgumentBuilder<CommandSourceStack> create() {
+            var pathBranch = Commands.literal("graph");
+            return pathBranch.then(buildShowBranch()).then(buildHideBranch());
+        }
+
+        private static ArgumentBuilder<CommandSourceStack, ?> buildShowBranch() {
+            return Commands.literal("show")
+                .then(Commands.argument("graph", StringArgumentType.greedyString())
+                .suggests(graphSuggestions())
+                .executes(ctx -> {
+                    String name = StringArgumentType.getString(ctx, "graph");
+                    if (name.equals("*")) {
+                        for (var graph : PropEnginePlugin.getInstance().pathRegistrar.getGraphs()) {
+                            PropEnginePlugin.getInstance().getGraphDebugRenderer().showGraph(graph);
+                        }
+                        ctx.getSource().getSender().sendMessage("Showing all graphs.");
+                        return 1;
+                    }
+                    var graph = PropEnginePlugin.getInstance().pathRegistrar.getGraph(name);
+                    if (graph == null) {
+                        ctx.getSource().getSender().sendMessage("Unknown graph: " + name);
+                        return 0;
+                    }
+                    PropEnginePlugin.getInstance().getGraphDebugRenderer().showGraph(graph);
+                    ctx.getSource().getSender().sendMessage("Showing graph: " + name);
+                    return 1;
+                }));
+        }
+
+        private static ArgumentBuilder<CommandSourceStack, ?> buildHideBranch() {
+            return Commands.literal("hide")
+                .then(Commands.argument("graph", StringArgumentType.greedyString())
+                .suggests(graphSuggestions())
+                .executes(ctx -> {
+                    String name = StringArgumentType.getString(ctx, "graph");
+                    if (name.equals("*")) {
+                        PropEnginePlugin.getInstance().getGraphDebugRenderer().hideAll();
+                        ctx.getSource().getSender().sendMessage("Hiding all graphs.");
+                        return 1;
+                    }
+                    var graph = PropEnginePlugin.getInstance().pathRegistrar.getGraph(name);
+                    if (graph == null) {
+                        ctx.getSource().getSender().sendMessage("Unknown graph: " + name);
+                        return 0;
+                    }
+                    PropEnginePlugin.getInstance().getGraphDebugRenderer().hideGraph(graph);
+                    ctx.getSource().getSender().sendMessage("Hiding graph: " + name);
+                    return 1;
+                }));
+        }
+
+        private static SuggestionProvider<CommandSourceStack> graphSuggestions() {
+            return (ctx, builder) -> {
+                builder.suggest("*");
+                for (var graph : PropEnginePlugin.getInstance().pathRegistrar.getGraphs()) {
+                    builder.suggest(graph.name);
+                }
+                return builder.buildFuture();
+            };
+        }
+    }
+
+    public static class RouteShowHideBranch {
+        protected static LiteralArgumentBuilder<CommandSourceStack> create() {
+            var pathBranch = Commands.literal("route");
+            return pathBranch.then(buildShowBranch()).then(buildHideBranch());
+        }
+
+        private static ArgumentBuilder<CommandSourceStack, ?> buildShowBranch() {
+            return Commands.literal("show")
+                .then(Commands.argument("route", StringArgumentType.greedyString())
+                .suggests(routeSuggestions())
+                .executes(ctx -> {
+                    String name = StringArgumentType.getString(ctx, "route");
+                    if (name.equals("*")) {
+                        for (var route : PropEnginePlugin.getInstance().pathRegistrar.getRoutes()) {
+                            PropEnginePlugin.getInstance().getRouteDebugRenderer().showRoute(route);
+                        }
+                        ctx.getSource().getSender().sendMessage("Showing all routes.");
+                        return 1;
+                    }
+                    var route = PropEnginePlugin.getInstance().pathRegistrar.getRoute(name);
+                    if (route == null) {
+                        ctx.getSource().getSender().sendMessage("Unknown route: " + name);
+                        return 0;
+                    }
+                    PropEnginePlugin.getInstance().getRouteDebugRenderer().showRoute(route);
+                    ctx.getSource().getSender().sendMessage("Showing route: " + name);
+                    return 1;
+                }));
+        }
+
+        private static ArgumentBuilder<CommandSourceStack, ?> buildHideBranch() {
+            return Commands.literal("hide")
+                .then(Commands.argument("route", StringArgumentType.greedyString())
+                .suggests(routeSuggestions())
+                .executes(ctx -> {
+                    String name = StringArgumentType.getString(ctx, "route");
+                    if (name.equals("*")) {
+                        PropEnginePlugin.getInstance().getRouteDebugRenderer().hideAll();
+                        ctx.getSource().getSender().sendMessage("Hiding all routes.");
+                        return 1;
+                    }
+                    var route = PropEnginePlugin.getInstance().pathRegistrar.getRoute(name);
+                    if (route == null) {
+                        ctx.getSource().getSender().sendMessage("Unknown route: " + name);
+                        return 0;
+                    }
+                    PropEnginePlugin.getInstance().getRouteDebugRenderer().hideRoute(route);
+                    ctx.getSource().getSender().sendMessage("Hiding route: " + name);
+                    return 1;
+                }));
+        }
+
+        private static SuggestionProvider<CommandSourceStack> routeSuggestions() {
+            return (ctx, builder) -> {
+                builder.suggest("*");
+                for (var route : PropEnginePlugin.getInstance().pathRegistrar.getRoutes()) {
+                    builder.suggest(route.name);
+                }
+                return builder.buildFuture();
+            };
+        }
+    }
+
+    public static class RouteLinkUnlinkBranch {
+
+    }
+
 }

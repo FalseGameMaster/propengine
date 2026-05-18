@@ -35,7 +35,7 @@ public final class PropPersistentData {
         PersistentDataContainer pdc = entity.getPersistentDataContainer();
         pdc.set(IS_PROP, PersistentDataType.BOOLEAN, true);
         pdc.set(LITERAL, PersistentDataType.STRING, prop.getLiteral());
-        pdc.set(UNIQUE_NAME, PersistentDataType.STRING, prop.uniqueFriendlyName);
+        pdc.set(UNIQUE_NAME, PersistentDataType.STRING, prop.uniqueName);
         pdc.set(WORLD, PersistentDataType.STRING, location.getWorld().getName());
         pdc.set(X, PersistentDataType.DOUBLE, location.getX());
         pdc.set(Y, PersistentDataType.DOUBLE, location.getY());

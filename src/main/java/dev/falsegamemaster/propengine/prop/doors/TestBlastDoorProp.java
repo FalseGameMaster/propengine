@@ -160,28 +160,28 @@ public class TestBlastDoorProp extends Prop {
 
         @Override
         public void createFrames(List<IPropAnimationFrame<TestBlastDoorProp>> frames) {
-            for (int i = 0; i < 2; i ++) {
-                frames.add(createFrame(i));
-            }
+//            for (int i = 0; i < 2; i ++) {
+//                frames.add(createFrame(i));
+//            }
         }
 
-        private IPropAnimationFrame<TestBlastDoorProp> createFrame(int frameIndex) {
-            return IPropAnimationFrame.create(prop -> {
-                PropPart<TestBlastDoorProp, ItemDisplay> leftDoorPart = prop.getPart(1), rightDoorPart = prop.getPart(2);
-                if (leftDoorPart == null || rightDoorPart == null) return;
-                AdvancedLocation location = prop.getLocation();
-                float xOffset = frameIndex == 0 ? 0 : 5;
-                Transform propTransform = new Transform.Builder(location).pivot(new Vector3f(-0.5f, 1.0f, -0.5f)).build();
-                Transform leftDoorPartTransform = new Transform.Builder().translation(new Vector3f(-0.5f + xOffset, 0.5f, -0.5f)).scale(new Vector3f(5.0f, 3.0f, 0.875f)).build();
-                Transform rightDoorPartTransform = new Transform.Builder().translation(new Vector3f(-0.5f - xOffset, 0.5f, -0.5f)).scale(new Vector3f(5.0f, 3.0f, 0.875f)).build();
-                leftDoorPart.getInternal().setInterpolationDelay(0);
-                leftDoorPart.getInternal().setInterpolationDuration(20);
-                leftDoorPart.getInternal().setTransformation(propTransform.compose(leftDoorPartTransform).bake());
-                rightDoorPart.getInternal().setInterpolationDelay(0);
-                rightDoorPart.getInternal().setInterpolationDuration(20);
-                rightDoorPart.getInternal().setTransformation(propTransform.compose(rightDoorPartTransform).bake());
-            }, 40);
-        }
+//        private IPropAnimationFrame<TestBlastDoorProp> createFrame(int frameIndex) {
+//            return IPropAnimationFrame.create(prop -> {
+//                PropPart<TestBlastDoorProp, ItemDisplay> leftDoorPart = prop.getPartOLD(1), rightDoorPart = prop.getPartOLD(2);
+//                if (leftDoorPart == null || rightDoorPart == null) return;
+//                AdvancedLocation location = prop.getLocation();
+//                float xOffset = frameIndex == 0 ? 0 : 5;
+//                Transform propTransform = new Transform.Builder(location).pivot(new Vector3f(-0.5f, 1.0f, -0.5f)).build();
+//                Transform leftDoorPartTransform = new Transform.Builder().translation(new Vector3f(-0.5f + xOffset, 0.5f, -0.5f)).scale(new Vector3f(5.0f, 3.0f, 0.875f)).build();
+//                Transform rightDoorPartTransform = new Transform.Builder().translation(new Vector3f(-0.5f - xOffset, 0.5f, -0.5f)).scale(new Vector3f(5.0f, 3.0f, 0.875f)).build();
+//                leftDoorPart.getInternal().setInterpolationDelay(0);
+//                leftDoorPart.getInternal().setInterpolationDuration(20);
+//                leftDoorPart.getInternal().setTransformation(propTransform.compose(leftDoorPartTransform).bake());
+//                rightDoorPart.getInternal().setInterpolationDelay(0);
+//                rightDoorPart.getInternal().setInterpolationDuration(20);
+//                rightDoorPart.getInternal().setTransformation(propTransform.compose(rightDoorPartTransform).bake());
+//            }, 40);
+//        }
     }
 
 }

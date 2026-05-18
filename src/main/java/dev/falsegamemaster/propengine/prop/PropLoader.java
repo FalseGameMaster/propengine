@@ -22,7 +22,7 @@ public class PropLoader {
                 PropSpawnRequest request = PropPersistentData.read(entity);
                 if (request == null) continue;
                 oldPropEntities.add(entity);
-                String key = request.literal() + ":" + request.uniqueFriendlyName();
+                String key = request.literal() + ":" + request.uniqueName();
                 requests.putIfAbsent(key, request);
             }
         }
