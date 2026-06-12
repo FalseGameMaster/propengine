@@ -14,10 +14,10 @@ public class PropAnimationPlayer<P extends Prop> {
         this.animation = animation;
     }
 
-    public void tick() {
+    public boolean tick() {
         if (ticksRemaining > 0) {
             ticksRemaining --;
-            return;
+            return true;
         }
         List<IPropAnimationFrame<P>> frames = animation.getFrames();
         IPropAnimationFrame<P> frame = frames.get(frameIndex);
@@ -26,7 +26,9 @@ public class PropAnimationPlayer<P extends Prop> {
         frameIndex ++;
         if (frameIndex >= frames.size()) {
             frameIndex = animation.isLooping ? 0 : frames.size() - 1;
+            return animation.isLooping;
         }
+        return false;
     }
 
 }

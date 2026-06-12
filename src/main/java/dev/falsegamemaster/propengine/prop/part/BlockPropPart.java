@@ -1,7 +1,6 @@
 package dev.falsegamemaster.propengine.prop.part;
 
 import dev.falsegamemaster.propengine.prop.Prop;
-import dev.falsegamemaster.propengine.prop.PropSpawnRequest;
 import org.bukkit.block.Block;
 
 public abstract class BlockPropPart<P extends Prop, B extends Block> extends PropPart<P, B> {
@@ -11,13 +10,18 @@ public abstract class BlockPropPart<P extends Prop, B extends Block> extends Pro
     }
 
     @Override
-    protected final void setupInternal(B raw, PropSpawnRequest request) {
+    protected final void setupInternal(B raw, Prop.SpawnRequest request) {
         // TODO: create this logic (4/18/2026)
     }
 
     @Override
-    public void spawn(PropSpawnRequest request) {
+    public void spawn(Prop.SpawnRequest request) {
         // TODO: create this logic (4/18/2026)
+    }
+
+    @Override
+    public void unload() {
+        // TODO: create this logic (5/29/2026)
     }
 
 }

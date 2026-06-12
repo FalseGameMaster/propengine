@@ -1,7 +1,6 @@
 package dev.falsegamemaster.propengine.prop.part;
 
 import dev.falsegamemaster.propengine.prop.Prop;
-import dev.falsegamemaster.propengine.prop.PropSpawnRequest;
 
 public abstract class PropPart<P extends Prop, I>  {
 
@@ -19,13 +18,23 @@ public abstract class PropPart<P extends Prop, I>  {
 
     public abstract String getLiteral();
 
+    public final String getKey() {
+        return getCategory() + "." + getLiteral();
+    }
+
+    public final String getQualifiedName() {
+        return prop.getLiteral() + "." + getKey();
+    }
+
     public abstract Class<I> getInternalClass();
 
-    protected abstract void setupInternal(I internal, PropSpawnRequest request);
+    protected abstract void setupInternal(I internal, Prop.SpawnRequest request);
 
-    public void prepareInternal(I internal, PropSpawnRequest request) {}
+    public void prepareInternal(I internal, Prop.SpawnRequest request) {}
 
-    public abstract void spawn(PropSpawnRequest request);
+    public abstract void spawn(Prop.SpawnRequest request);
+
+    public abstract void unload();
 
     public I getInternal() {
         return internal;

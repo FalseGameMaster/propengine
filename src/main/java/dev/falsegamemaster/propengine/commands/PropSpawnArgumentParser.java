@@ -29,22 +29,16 @@ public final class PropSpawnArgumentParser {
 
     private PropSpawnArgumentParser() {}
 
-    public static @Nullable PropSpawnRequest parse(PropEnginePlugin propEngine, CommandContext<CommandSourceStack> context, PropType propType, PropRotationMode rotationMode, boolean explicitDimension) {
+    public static @Nullable Prop.SpawnRequest parse(PropEnginePlugin propEngine, CommandContext<CommandSourceStack> context, PropType propType, PropRotationMode rotationMode) {
         CommandSender sender = context.getSource().getSender();
         Player player = sender instanceof Player p ? p : null;
         String literal = StringArgumentType.getString(context, "literal");
         IPropFactory<?> propFactory = propEngine.propRegistrar.getEntries().get(literal);
         if (propFactory == null) { sender.sendPlainMessage("Unknown prop: " + literal); return null; }
         if (!Objects.equals(Prop.dummy(propFactory).getPropType(), propType)) { sender.sendPlainMessage("Prop " + literal + " is not of type " + propType + "."); return null; }
-        World world;
-        if (explicitDimension) {
-            String worldName = StringArgumentType.getString(context, "dimension");
-            world = Bukkit.getWorld(worldName);
-            if (world == null) { sender.sendPlainMessage("Unknown dimension/world: " + worldName); return null; }
-        } else {
-            if (player == null) { sender.sendPlainMessage("Console must specify a dimension using 'in <dimension>'."); return null; }
-            world = player.getWorld();
-        }
+        String worldName = StringArgumentType.getString(context, "dimension");
+        World world = Bukkit.getWorld(worldName);
+        if (world == null) { sender.sendPlainMessage("Unknown dimension/world: " + worldName); return null; }
         Location baseLocation = player != null ? player.getLocation() : null;
         FinePositionResolver position = context.getArgument("position", FinePositionResolver.class);
         FinePosition resolved;
@@ -71,12 +65,15 @@ public final class PropSpawnArgumentParser {
             yaw = parsedYaw + 180; pitch = parsedPitch; roll = parsedRoll;
         }
         JsonObject data = null;
-        try { data = PropDataParser.parseObject(StringArgumentType.getString(context, "data"));
-        } catch (IllegalArgumentException e) {
-            PropEnginePlugin.LOGGER.warning("Custom JSON data could not be parsed for prop: " + e.getMessage());
+        String dataString = null;
+        try { dataString = StringArgumentType.getString(context, "data"); } catch (IllegalArgumentException ignored) {}
+        if (dataString != null) {
+            try { data = PropDataParser.parseObject(dataString); } catch (IllegalArgumentException e) {
+                PropEnginePlugin.LOGGER.warning("Custom JSON data could not be parsed for prop: " + e.getMessage());
+            }
         }
         String uniqueName = Optional.ofNullable(parseUniqueFriendlyName(data)).orElse(UUID.randomUUID().toString());
-        return new PropSpawnRequest(literal, uniqueName, new AdvancedLocation(world, x, y, z, yaw, pitch, roll), data);
+        return new Prop.SpawnRequest(literal, uniqueName, new AdvancedLocation(world, x, y, z, yaw, pitch, roll), data);
     }
 
     @Nullable

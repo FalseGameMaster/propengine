@@ -52,7 +52,7 @@ public class GraphDebugRenderer {
         for (PropAI.PathEdge edge : graph.getEdges()) {
             Location from = graph.requireNode(edge.from()).location();
             Location to = graph.requireNode(edge.to()).location();
-            Util.spawnParticleLine(from, to, graph.color);
+            Util.InGameDebug.spawnParticleLine(from, to, graph.color);
         }
     }
 

@@ -2,7 +2,6 @@ package dev.falsegamemaster.propengine.registration;
 
 import java.util.Map;
 
-// TODO: if deleting PropPartRegistrar, merge this back into PropRegistrar (4/17/2026)
 public abstract class Registrar<E> {
 
     public boolean registerIfMissing(String literal, E entry) {

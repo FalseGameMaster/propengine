@@ -52,12 +52,12 @@ public class RouteDebugRenderer {
         for (int i = 0; i + 1 < nodeIds.size(); i ++) {
             Location from = route.graph.requireNode(nodeIds.get(i)).location();
             Location to = route.graph.requireNode(nodeIds.get(i + 1)).location();
-            Util.spawnParticleLine(from, to, route.color);
+            Util.InGameDebug.spawnParticleLine(from, to, route.color);
         }
         if (route.mode == PropAI.PatrolMode.LOOP) {
             Location from = route.graph.requireNode(nodeIds.getLast()).location();
             Location to = route.graph.requireNode(nodeIds.getFirst()).location();
-            Util.spawnParticleLine(from, to, route.color);
+            Util.InGameDebug.spawnParticleLine(from, to, route.color);
         }
     }
 

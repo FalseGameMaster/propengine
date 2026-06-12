@@ -6,6 +6,7 @@ import com.google.gson.JsonParser;
 
 import javax.annotation.Nullable;
 
+// TODO (5/31/2026): perhaps merge this with another class. PropCodec or Prop?
 public class PropDataParser {
 
     public static @Nullable JsonObject parseObject(@Nullable String raw) {
