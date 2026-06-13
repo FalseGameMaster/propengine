@@ -5,11 +5,11 @@ api-version: '1.21'
 authors: [ FalseGameMaster ]
 description:
   Provides a quick and easy way to place and configure custom doors in Minecraft. Note: This is primarily designed as a Paper plugin, and there are not currently plans to expand it beyond that scope.
-#commands:
-#  propengine:
-#    description: Main PropEngine command
-#    usage: |
-#      /propengine spawn <prop_type> <namespace:prop_name> in <dimension> at <x> <y> <z> facing <north|east|south|west|n|e|s|w>
-#      /propengine spawn <prop_type> <namespace:prop_name> in <dimension> at <x> <y> <z> rotated <yaw> <pitch> <roll>
-#      example 1: /propengine spawn door propengine:example_door in world at 1 2 3 facing east
-#      example 2: /propengine spawn vehicle propengine:example_vehicle in world at 1 2 3 rotated 45 30 25
+commands:
+  propengine:
+    description: Main PropEngine command
+    usage: |
+      /propengine spawn <prop_type> <namespace:prop_name> in <dimension> at <x> <y> <z> facing <north|east|south|west|n|e|s|w>
+      /propengine spawn <prop_type> <namespace:prop_name> in <dimension> at <x> <y> <z> rotated <yaw> <pitch> <roll>
+      example 1: /propengine spawn door propengine:example_door in world at 1 2 3 facing east
+      example 2: /propengine spawn vehicle propengine:example_vehicle in world at 1 2 3 rotated 45 30 25
